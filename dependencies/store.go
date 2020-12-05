@@ -5,11 +5,33 @@ import (
 	"reflect"
 )
 
+var globalStore = NewStore()
+
+// RegisterGlobal calls Register on the global store.
+func RegisterGlobal(value interface{}) error {
+	return globalStore.Register(value)
+}
+
+// GetGlobal calls Get on the global store.
+func GetGlobal(value interface{}) error {
+	return globalStore.Get(value)
+}
+
+// HasGlobal calls Has on the global store.
+func HasGlobal(value interface{}) (bool, error) {
+	return globalStore.Has(value)
+}
+
+// DeleteGlobal calls Delete on the global store.
+func DeleteGlobal(value interface{}) error {
+	return globalStore.Delete(value)
+}
+
 // Store holds values by their type key.
 type Store map[string]interface{}
 
-// New returns an empty Store: pass this around as your dependencies.
-func New() Store {
+// NewStore returns an empty Store: pass this around as your dependencies.
+func NewStore() Store {
 	return map[string]interface{}{}
 }
 
@@ -43,6 +65,28 @@ func (store Store) Get(value interface{}) error {
 	}
 
 	reflect.ValueOf(value).Elem().Set(reflect.ValueOf(storedValue).Elem())
+	return nil
+}
+
+// Has returns true if the type of the given value is stored.
+func (store Store) Has(value interface{}) (bool, error) {
+	key, err := makeTypeKey(value)
+	if err != nil {
+		return false, err
+	}
+
+	_, hasKey := store[key]
+	return hasKey, nil
+}
+
+// Delete removes the stored value for the type of the given value.
+func (store Store) Delete(value interface{}) error {
+	key, err := makeTypeKey(value)
+	if err != nil {
+		return err
+	}
+
+	delete(store, key)
 	return nil
 }
 

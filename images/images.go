@@ -11,11 +11,11 @@ type Uploader struct {
 }
 
 // NewUploader returns an Uploader, or an error if it can't get an AWS API.
-func NewUploader(deps dependencies.Store) (Uploader, error) {
+func NewUploader() (Uploader, error) {
 	uploader := Uploader{}
 
 	awsAPI := aws.API{}
-	err := deps.Get(&awsAPI)
+	err := dependencies.GetGlobal(&awsAPI)
 	if err != nil {
 		return uploader, err
 	}

@@ -12,8 +12,31 @@ type testStruct struct {
 	privateField string
 }
 
-func TestNew(t *testing.T) {
-	assert.Equal(t, Store{}, New())
+func TestGlobalStore(t *testing.T) {
+	globalStore = NewStore()
+
+	val := testStruct{PublicField: 111}
+	err := RegisterGlobal(&val)
+	require.NoError(t, err)
+
+	newVal := testStruct{}
+	err = GetGlobal(&newVal)
+	require.NoError(t, err)
+	assert.Equal(t, 111, newVal.PublicField)
+
+	has, err := HasGlobal(&testStruct{})
+	require.NoError(t, err)
+	assert.True(t, has)
+
+	err = DeleteGlobal(&testStruct{})
+	require.NoError(t, err)
+
+	err = GetGlobal(&testStruct{})
+	require.IsType(t, &ErrNotRegistered{}, err)
+}
+
+func TestNewStore(t *testing.T) {
+	assert.Equal(t, Store{}, NewStore())
 }
 
 func TestRegister(t *testing.T) {
